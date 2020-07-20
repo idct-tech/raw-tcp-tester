@@ -1,0 +1,31 @@
+name: Windows Build
+
+on:
+  push:
+    tags:
+    - '*'
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+    - name: Install dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet publish tcptest.csproj --configuration Windows --framework netcoreapp3.1 --runtime win-x64 /p:PublishSingleFile=true --output out
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v1-release
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: out/tcptest.exe
+        tag: ${{ github.ref }}
+        asset_name: tcptest-Win-x64.exe
+        overwrite: true
+        file_glob: false
